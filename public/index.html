@@ -11,7 +11,6 @@
             font-size: 14pt;
             margin: 0px;
             overflow: hidden;
-            background-color: purple;
         }
 
         /* #info {
@@ -107,8 +106,8 @@
             };
             this.get2DCoordinates = function(position) {
                 let vector = position.project(camera);
-                vector.x = (vector.x + 1)/2 * width + 15; // 10 is offset from parent's 2D coordinate
-                vector.y = -(vector.y - 1)/2 * height - 10;
+                vector.x = (vector.x + 1)/2 * width - 10; 
+                vector.y = -(vector.y - 1)/2 * height - 30;
                 return vector;
             };
         }
@@ -200,7 +199,7 @@
                 let connectionGeometry = new THREE.Geometry();
                 connectionGeometry.vertices.push(plottedX[i]);
                 connectionGeometry.vertices.push(plottedW[i]);
-                let connectionMaterial = new THREE.LineBasicMaterial({color: "black", transparent: true, opacity: 0.8});
+                let connectionMaterial = new THREE.LineBasicMaterial({color: "black", transparent: true, opacity: 0.6});
                 let connection = new THREE.Line(connectionGeometry, connectionMaterial);
                 scene.add(connection);
             }
