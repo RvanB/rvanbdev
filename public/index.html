@@ -180,17 +180,16 @@
         // Plots xi and wi on the graph.
         function plotPoints() {
             plottedX[0] = new THREE.Vector3(2, 0, 1);
+            plottedW[0] = new THREE.Vector3(2, 0, 0);
             plotPoint(plottedX[0], "x<sub>0</sub>", "#004744");
+            plotPoint(plottedW[0], "w<sub>0</sub>", "black");
             for (let i = 1; i < 12; i++) {
                 plottedX[i] = transformByMatrix(plottedX[i - 1])
                 plotPoint(plottedX[i], "x<sub>" + i + "</sub>", "#004744");
-            }
 
-            plottedW[0] = new THREE.Vector3(2, 0, 0);
-            plotPoint(plottedW[0], "w<sub>0</sub>", "black");
-            for (let i = 1; i < 12; i++) {
                 plottedW[i] = transformByMatrix(plottedW[i - 1])
                 plotPoint(plottedW[i], "w<sub>" + i + "</sub>", "black");
+
             }
         }
 
