@@ -11,6 +11,7 @@
             font-size: 14pt;
             margin: 0px;
             overflow: hidden;
+            background-color: #f6f5f5;
         }
 
         /* #info {
@@ -70,6 +71,15 @@
         let textLabels = [];
         let plottedX = [];
         let plottedW = [];
+        let numPoints = 12;
+
+        let cylinderColor = "#fce7b5";
+        let xColor = "#007484";
+        let wColor = "black";
+        let textColor = "black";
+        let xAxisColor = "black";
+        let yAxisColor = "black";
+        let zAxisColor = "black";
 
         // Transformation matrix A
         let A = [
@@ -148,12 +158,16 @@
 
         // Creates ambient and point lights for the scene
         function addLights() {
-            let ambient = new THREE.AmbientLight(0x404040);
+            let ambient = new THREE.AmbientLight(0x202020);
             scene.add(ambient);
             
-            let light = new THREE.PointLight(0xffffff, 2, 100, 1);
-            light.position.set(50, -30, 30);
-            scene.add(light);
+            let light1 = new THREE.PointLight(0xffffff, 2, 100, 1);
+            light1.position.set(50, 30, -30);
+
+            let light2 = new THREE.PointLight(0xffffff, 2, 100, 1);
+            light2.position.set(-50, -30, -30);
+            scene.add(light1);
+            scene.add(light2);
         }
 
         // Creates the cylinder and adds it to the scene
@@ -162,12 +176,13 @@
             let cylinderGeometry = new THREE.CylinderGeometry(2, 2, 2.5, 40, 1, true, 0, Math.PI * 2);
 
             let material = new THREE.MeshPhongMaterial({
-                color: "lemonchiffon",
-                shininess: 50,
+                color: cylinderColor,
+                shininess: 0,
                 opacity: 0.6,
                 side: THREE.DoubleSide,
                 transparent: true,
                 depthWrite: false,
+                // depthTest: false,
             });
             let cylinder = new THREE.Mesh(cylinderGeometry, material);
             cylinder.rotation.x = Math.PI/2;
@@ -180,14 +195,14 @@
         function plotPoints() {
             plottedX[0] = new THREE.Vector3(2, 0, 1);
             plottedW[0] = new THREE.Vector3(2, 0, 0);
-            plotPoint(plottedX[0], "x<sub>0</sub>", "#004744");
-            plotPoint(plottedW[0], "w<sub>0</sub>", "black");
-            for (let i = 1; i < 12; i++) {
+            plotPoint(plottedX[0], "x<sub>0</sub>", xColor);
+            plotPoint(plottedW[0], "w<sub>0</sub>", wColor);
+            for (let i = 1; i < numPoints; i++) {
                 plottedX[i] = transformByMatrix(plottedX[i - 1])
-                plotPoint(plottedX[i], "x<sub>" + i + "</sub>", "#004744");
+                plotPoint(plottedX[i], "x<sub>" + i + "</sub>", xColor);
 
                 plottedW[i] = transformByMatrix(plottedW[i - 1])
-                plotPoint(plottedW[i], "w<sub>" + i + "</sub>", "black");
+                plotPoint(plottedW[i], "w<sub>" + i + "</sub>", wColor);
 
             }
         }
@@ -195,11 +210,11 @@
         // Creates connections between xi and wi points.
         function createConnections() {
             
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < numPoints; i++) {
                 let connectionGeometry = new THREE.Geometry();
                 connectionGeometry.vertices.push(plottedX[i]);
                 connectionGeometry.vertices.push(plottedW[i]);
-                let connectionMaterial = new THREE.LineBasicMaterial({color: "black", transparent: true, opacity: 0.6});
+                let connectionMaterial = new THREE.LineBasicMaterial({color: wColor});
                 let connection = new THREE.Line(connectionGeometry, connectionMaterial);
                 scene.add(connection);
             }
@@ -207,15 +222,14 @@
         
         // Creates spiral through xi points.
         function createSpiral() {
-            let curve = new THREE.CatmullRomCurve3([
-                plottedX[0], plottedX[1], plottedX[2], plottedX[3],
-                plottedX[4], plottedX[5], plottedX[6], plottedX[7],
-                plottedX[8], plottedX[9], plottedX[10], plottedX[11],
-            ]);
-            let points = curve.getPoints(30);
+            let curve = new THREE.CatmullRomCurve3();
+            for (let i = 0; i < numPoints; i++) {
+                curve.points.push(plottedX[i]);
+            }
+            let points = curve.getPoints(numPoints*3);
             let geometry = new THREE.BufferGeometry().setFromPoints(points);
             let material = new THREE.LineBasicMaterial({
-                color: "#006d68", 
+                color: xColor,
             });
             let curveObject = new THREE.Line(geometry, material);
             scene.add(curveObject);
@@ -244,9 +258,9 @@
             zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
             zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 4));
 
-            let xAxisMaterial = new THREE.LineBasicMaterial({color: "red"});
-            let yAxisMaterial = new THREE.LineBasicMaterial({color: "green"});
-            let zAxisMaterial = new THREE.LineBasicMaterial({color: "blue"});
+            let xAxisMaterial = new THREE.LineBasicMaterial({color: xAxisColor});
+            let yAxisMaterial = new THREE.LineBasicMaterial({color: yAxisColor});
+            let zAxisMaterial = new THREE.LineBasicMaterial({color: zAxisColor});
 
             let xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
             let yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
@@ -261,9 +275,9 @@
             let yConeGeometry = new THREE.ConeGeometry(0.05, 0.3, 10);
             let zConeGeometry = new THREE.ConeGeometry(0.05, 0.3, 10);
 
-            let xConeMaterial = new THREE.MeshPhongMaterial({color: "red"});
-            let yConeMaterial = new THREE.MeshPhongMaterial({color: "green"});
-            let zConeMaterial = new THREE.MeshPhongMaterial({color: "blue"});
+            let xConeMaterial = new THREE.MeshPhongMaterial({color: xAxisColor});
+            let yConeMaterial = new THREE.MeshPhongMaterial({color: yAxisColor});
+            let zConeMaterial = new THREE.MeshPhongMaterial({color: zAxisColor});
             let xCone = new THREE.Mesh(xConeGeometry, xConeMaterial);
             let yCone = new THREE.Mesh(yConeGeometry, yAxisMaterial);
             let zCone = new THREE.Mesh(zConeGeometry, zAxisMaterial);
@@ -276,14 +290,14 @@
             zCone.rotation.x = Math.PI/2;
             zCone.position.z = 4;
             
-            scene.add(xCone);
-            scene.add(yCone);
-            scene.add(zCone);
+            // scene.add(xCone);
+            // scene.add(yCone);
+            // scene.add(zCone);
 
             // Create text labels for axes
-            let xLabel = new TextLabel("x<sub>1</sub>", xCone, "darkred");
-            let yLabel = new TextLabel("x<sub>2</sub>", yCone, "darkgreen");
-            let zLabel = new TextLabel("x<sub>3</sub>", zCone, "darkblue");
+            let xLabel = new TextLabel("x<sub>1</sub>", xCone, xAxisColor);
+            let yLabel = new TextLabel("x<sub>2</sub>", yCone, yAxisColor);
+            let zLabel = new TextLabel("x<sub>3</sub>", zCone, zAxisColor);
             xLabel.element.className = "axisLabel";
             yLabel.element.className = "axisLabel";
             zLabel.element.className = "axisLabel";
@@ -299,14 +313,14 @@
         // Creates text label for the point with the given name
         function plotPoint(v, name, color) {
 
-            let sphereGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-            let sphereMaterial = new THREE.MeshPhongMaterial({color: color, shininess: 100});
+            let sphereGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+            let sphereMaterial = new THREE.MeshBasicMaterial({color: color});
             let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             scene.add(sphere);
             
             sphere.position.copy(v);
 
-            let label = new TextLabel(name, sphere, color);
+            let label = new TextLabel(name, sphere, textColor);
             textLabels.push(label);
             document.body.appendChild(label.element);
         }
