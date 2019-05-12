@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Transformation Matrix Visualization</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14pt;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        /* #info {
+            z-index: 2;
+            position: absolute;
+            height: 100%;
+        } */
+
+        .axisLabel {
+            font-style: italic;
+            font-weight: lighter;
+        }
+        
+        .label {
+            z-index: 1;
+            font-style: normal;
+            font-weight: bold;
+
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        table, td, th {
+            padding: 0px 10px;
+            border:  1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+    <!-- <div id="info">
+        <table>
+            <tr>
+                <th style="font-weight: bold;">x<sub>i</sub></th>
+                <th style="font-style: italic; font-weight: normal;">(x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>)</th>
+                <th style="font-weight: bold;">||x<sub>i</sub>||</th>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">x<sub>1</sub></td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">x<sub>2</sub></td>
+            </tr>
+
+
+        </table>
+    </div> -->
+    
+    <script src="js/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script>
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let camera, controls, scene, renderer;
+        let textLabels = [];
+        let plottedX = [];
+        let plottedW = [];
+
+        // Transformation matrix A
+        let A = [
+            [ .8, .6, 0  ],
+            [-.6, .8, 0  ],
+            [  0,  0, 1.07]
+        ];
+
+        init();
+        render();
+        animate();
+
+        // Creates a TextLabel with the given text, parent, and text color
+        // The TextLabel will appear at the parent's coordinate
+        function TextLabel(text, parent, color) {
+            let div = document.createElement("div");
+            div.style.position = "absolute";
+            div.innerHTML = text;
+            div.className = "label";
+            div.style.top = 0;
+            div.style.left = 0;
+            div.style.width = 100;
+            div.style.height = 100;
+            div.style.color = color;
+
+            this.element = div;
+            this.position = new THREE.Vector3(0, 0, 0);
+            this.parent = parent;
+            this.update = function() {
+                this.position.copy(this.parent.position);
+                let coordinates = this.get2DCoordinates(this.position, camera);
+                this.element.style.left = coordinates.x + "px";
+                this.element.style.top = coordinates.y + "px";
+            };
+            this.get2DCoordinates = function(position) {
+                let vector = position.project(camera);
+                vector.x = (vector.x + 1)/2 * width + 15; // 10 is offset from parent's 2D coordinate
+                vector.y = -(vector.y - 1)/2 * height - 10;
+                return vector;
+            };
+        }
+
+        // Initializes camera, scene, lighting, renderer and controls
+        function init() {
+            // Setup the orthographic camera
+            let distance = 4.5;
+            let ratio = width / height;
+            camera = new THREE.OrthographicCamera(-distance * ratio, distance * ratio, distance, -distance, 1, 1000);
+            
+            camera.position.set(10, 8, 10);
+            camera.up = new THREE.Vector3(0, 0, 1);
+            camera.lookAt(0, 0, 0);
+
+            // Initialize scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+
+            // Initialize renderer
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(width, height);
+            document.body.appendChild( renderer.domElement );
+
+            // Set up camera and controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.rotateSpeed = .5;
+            controls.enablePan = false;
+            controls.addEventListener("change", render);
+
+            createAxes();
+            createCylinder();
+            addLights();
+            plotPoints();
+            createSpiral();
+            createConnections();
+        }
+
+        // Creates ambient and point lights for the scene
+        function addLights() {
+            let ambient = new THREE.AmbientLight(0x404040);
+            scene.add(ambient);
+            
+            let light = new THREE.PointLight(0xffffff, 2, 100, 1);
+            light.position.set(50, -30, 30);
+            scene.add(light);
+        }
+
+        // Creates the cylinder and adds it to the scene
+        function createCylinder() {
+            
+            let cylinderGeometry = new THREE.CylinderGeometry(2, 2, 2.5, 40, 1, true, 0, Math.PI * 2);
+
+            let material = new THREE.MeshPhongMaterial({
+                color: "lemonchiffon",
+                shininess: 50,
+                opacity: 0.6,
+                side: THREE.DoubleSide,
+                transparent: true,
+                depthWrite: false,
+            });
+            let cylinder = new THREE.Mesh(cylinderGeometry, material);
+            cylinder.rotation.x = Math.PI/2;
+            cylinder.position.z = 1.25;
+            
+            scene.add(cylinder);
+        }
+
+        // Plots xi and wi on the graph.
+        function plotPoints() {
+            plottedX[0] = new THREE.Vector3(2, 0, 1);
+            plotPoint(plottedX[0], "x<sub>0</sub>", "#004744");
+            for (let i = 1; i < 12; i++) {
+                plottedX[i] = transformByMatrix(plottedX[i - 1])
+                plotPoint(plottedX[i], "x<sub>" + i + "</sub>", "#004744");
+            }
+
+            plottedW[0] = new THREE.Vector3(2, 0, 0);
+            plotPoint(plottedW[0], "w<sub>0</sub>", "black");
+            for (let i = 1; i < 12; i++) {
+                plottedW[i] = transformByMatrix(plottedW[i - 1])
+                plotPoint(plottedW[i], "w<sub>" + i + "</sub>", "black");
+            }
+        }
+
+        // Creates connections between xi and wi points.
+        function createConnections() {
+            
+            for (let i = 0; i < 12; i++) {
+                let connectionGeometry = new THREE.Geometry();
+                connectionGeometry.vertices.push(plottedX[i]);
+                connectionGeometry.vertices.push(plottedW[i]);
+                let connectionMaterial = new THREE.LineBasicMaterial({color: "black", transparent: true, opacity: 0.8});
+                let connection = new THREE.Line(connectionGeometry, connectionMaterial);
+                scene.add(connection);
+            }
+        }
+        
+        // Creates spiral through xi points.
+        function createSpiral() {
+            let curve = new THREE.CatmullRomCurve3([
+                plottedX[0], plottedX[1], plottedX[2], plottedX[3],
+                plottedX[4], plottedX[5], plottedX[6], plottedX[7],
+                plottedX[8], plottedX[9], plottedX[10], plottedX[11],
+            ]);
+            let points = curve.getPoints(30);
+            let geometry = new THREE.BufferGeometry().setFromPoints(points);
+            let material = new THREE.LineBasicMaterial({
+                color: "#006d68", 
+            });
+            let curveObject = new THREE.Line(geometry, material);
+            scene.add(curveObject);
+        }
+
+        function transformByMatrix(v) {
+            let x = v.x * A[0][0] + v.y * A[1][0] + v.z * A[2][0];
+            let y = v.x * A[0][1] + v.y * A[1][1] + v.z * A[2][1];
+            let z = v.x * A[0][2] + v.y * A[1][2] + v.z * A[2][2];
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // Creates geometry for axes, axis pointers, and axis labels
+        function createAxes() {
+
+            // Create axes
+            let xAxisGeometry = new THREE.Geometry();
+            xAxisGeometry.vertices.push(new THREE.Vector3(-3, 0, 0));
+            xAxisGeometry.vertices.push(new THREE.Vector3( 3, 0, 0));
+            
+            let yAxisGeometry = new THREE.Geometry();
+            yAxisGeometry.vertices.push(new THREE.Vector3(0,-3, 0));
+            yAxisGeometry.vertices.push(new THREE.Vector3(0, 3, 0));
+            
+            let zAxisGeometry = new THREE.Geometry();
+            zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+            zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 4));
+
+            let xAxisMaterial = new THREE.LineBasicMaterial({color: "red"});
+            let yAxisMaterial = new THREE.LineBasicMaterial({color: "green"});
+            let zAxisMaterial = new THREE.LineBasicMaterial({color: "blue"});
+
+            let xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
+            let yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
+            let zAxis = new THREE.Line(zAxisGeometry, zAxisMaterial);
+
+            scene.add(xAxis);
+            scene.add(yAxis);
+            scene.add(zAxis);
+
+            // Axis arrows
+            let xConeGeometry = new THREE.ConeGeometry(0.05, 0.3, 10);
+            let yConeGeometry = new THREE.ConeGeometry(0.05, 0.3, 10);
+            let zConeGeometry = new THREE.ConeGeometry(0.05, 0.3, 10);
+
+            let xConeMaterial = new THREE.MeshPhongMaterial({color: "red"});
+            let yConeMaterial = new THREE.MeshPhongMaterial({color: "green"});
+            let zConeMaterial = new THREE.MeshPhongMaterial({color: "blue"});
+            let xCone = new THREE.Mesh(xConeGeometry, xConeMaterial);
+            let yCone = new THREE.Mesh(yConeGeometry, yAxisMaterial);
+            let zCone = new THREE.Mesh(zConeGeometry, zAxisMaterial);
+
+            xCone.rotation.z = -Math.PI/2;
+            xCone.position.x = 3;
+
+            yCone.position.y = 3;
+
+            zCone.rotation.x = Math.PI/2;
+            zCone.position.z = 4;
+            
+            scene.add(xCone);
+            scene.add(yCone);
+            scene.add(zCone);
+
+            // Create text labels for axes
+            let xLabel = new TextLabel("x<sub>1</sub>", xCone, "darkred");
+            let yLabel = new TextLabel("x<sub>2</sub>", yCone, "darkgreen");
+            let zLabel = new TextLabel("x<sub>3</sub>", zCone, "darkblue");
+            xLabel.element.className = "axisLabel";
+            yLabel.element.className = "axisLabel";
+            zLabel.element.className = "axisLabel";
+            textLabels.push(xLabel);
+            textLabels.push(yLabel);
+            textLabels.push(zLabel);
+            document.body.appendChild(xLabel.element);
+            document.body.appendChild(yLabel.element);
+            document.body.appendChild(zLabel.element);
+        }
+
+        // Plots the given point on the graph
+        // Creates text label for the point with the given name
+        function plotPoint(v, name, color) {
+
+            let sphereGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+            let sphereMaterial = new THREE.MeshPhongMaterial({color: color, shininess: 100});
+            let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            scene.add(sphere);
+            
+            sphere.position.copy(v);
+
+            let label = new TextLabel(name, sphere, color);
+            textLabels.push(label);
+            document.body.appendChild(label.element);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            for (let i = 0; i < textLabels.length; i++) {
+                textLabels[i].update();
+            }
+        }
+        
+        function render() {
+            renderer.render( scene, camera );
+        }
+
+    </script>
+</body>
+</html>
