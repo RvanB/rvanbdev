@@ -8,17 +8,20 @@
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 14pt;
+            font-size: 12pt;
             margin: 0px;
             overflow: hidden;
             background-color: #f6f5f5;
         }
 
-        /* #info {
+        #info {
             z-index: 2;
+            width:100%;
             position: absolute;
-            height: 100%;
-        } */
+            top: calc(100% - 50px);
+            text-align: center;
+            height: 50px;
+        }
 
         .axisLabel {
             font-style: italic;
@@ -42,7 +45,7 @@
         }
 
         sub {
-            font-size: 8pt;
+            font-size: 10pt;
             font-weight: normal;
         }
     </style>
@@ -66,6 +69,9 @@
 
         </table>
     </div> -->
+    <div id="info">
+        Drag the mouse to move rotate camera, mouse wheel to zoom in/out
+    </div>
     
     <script src="lib/three.min.js"></script>
     <script src="lib/OrbitControls.js"></script>
