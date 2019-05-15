@@ -49,6 +49,7 @@
         }
 
         #coordinateBox {
+            display: none;
             z-index: 2;
             position: absolute;
             background-color: white;
@@ -61,9 +62,10 @@
 <body>
     <div id="coordinateBox"></div>
     <div id="info">
-        Drag to rotate camera, mouse wheel to zoom in/out<br>
+        Drag to rotate camera, mouse wheel to zoom in/out.<br>
         To change number of iterations, add ?iterations=x to url<br>
-        Example: rvanb.dev?iterations=20
+        Example: rvanb.dev?iterations=20<br><br>
+        Hover over points to show their coordinates.
     </div>
     
     <script src="lib/three.min.js"></script>
