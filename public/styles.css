@@ -1,0 +1,48 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    margin: 0px;
+    overflow: hidden;
+    background-color: #f6f5f5;
+}
+
+#info {
+    z-index: 2;
+    width:100%;
+    position: absolute;
+    bottom: 20px;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.axisLabel {
+    font-style: italic;
+    font-weight: lighter;
+}
+
+.label {
+    z-index: 1;
+    font-style: normal;
+    font-weight: bold;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+sub {
+    font-size: 10pt;
+    font-weight: normal;
+}
+
+#coordinateBox {
+    display: none;
+    z-index: 2;
+    position: absolute;
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+}
