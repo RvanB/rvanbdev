@@ -69,7 +69,9 @@
         </table>
     </div> -->
     <div id="info">
-        Drag to rotate camera, mouse wheel to zoom in/out
+        Drag to rotate camera, mouse wheel to zoom in/out<br>
+        To change number of iterations, add ?iterations=x to url<br>
+        Example: https://rvanb.dev/?iterations=12
     </div>
     
     <script src="lib/three.min.js"></script>
@@ -81,7 +83,7 @@
         let textLabels = [];
         let plottedX = [];
         let plottedW = [];
-        let numPoints = 12;//parseInt(prompt("Number of iterations: "));
+        let iterations = 12;//parseInt(prompt("Number of iterations: "));
         let maxHeight = 0;
 
         let cylinderColor = "#fce7b5";
@@ -173,8 +175,8 @@
                 vars[key] = value;
             });
             
-            if ("numPoints" in vars) {
-                numPoints = parseInt(vars["numPoints"]);
+            if ("iterations" in vars) {
+                iterations = parseInt(vars["iterations"]) + 1;
             }
         }
 
@@ -194,7 +196,7 @@
 
         // Creates the cylinder and adds it to the scene
         function createCylinder() {
-            maxHeight = plottedX[numPoints - 1].z;
+            maxHeight = plottedX[iterations - 1].z;
             
             let cylinderGeometry = new THREE.CylinderGeometry(2, 2, maxHeight, 40, 1, true, 0, Math.PI * 2);
 
@@ -220,7 +222,7 @@
             plottedW[0] = new THREE.Vector3(2, 0, 0);
             plotPoint(plottedX[0], "x<sub>0</sub>", xColor);
             plotPoint(plottedW[0], "w<sub>0</sub>", wColor);
-            for (let i = 1; i < numPoints; i++) {
+            for (let i = 1; i < iterations; i++) {
                 plottedX[i] = transformByMatrix(plottedX[i - 1])
                 plotPoint(plottedX[i], "x<sub>" + i + "</sub>", xColor);
 
@@ -228,13 +230,13 @@
                 plotPoint(plottedW[i], "w<sub>" + i + "</sub>", wColor);
 
             }
-            plottedX[numPoints] = transformByMatrix(plottedX[numPoints - 1]);
+            plottedX[iterations] = transformByMatrix(plottedX[iterations - 1]);
         }
 
         // Creates connections between xi and wi points.
         function createConnections() {
             
-            for (let i = 0; i < numPoints; i++) {
+            for (let i = 0; i < iterations; i++) {
                 let connectionGeometry = new THREE.Geometry();
                 connectionGeometry.vertices.push(plottedX[i]);
                 connectionGeometry.vertices.push(plottedW[i]);
@@ -250,13 +252,13 @@
 
             let curve = new THREE.CatmullRomCurve3();
             curve.points.push(new THREE.Vector3(1.6, -1.2, 1/1.07))
-            for (let i = 0; i < numPoints; i++) {
+            for (let i = 0; i < iterations; i++) {
                 curve.points.push(plottedX[i]);
             }
-            curve.points.push(plottedX[numPoints]);
-            let points = curve.getPoints((numPoints + 1) * pointsPerSegment);
+            curve.points.push(plottedX[iterations]);
+            let points = curve.getPoints((iterations + 1) * pointsPerSegment);
 
-            let finalPoints = points.splice(pointsPerSegment, (numPoints-1)*pointsPerSegment+1);
+            let finalPoints = points.splice(pointsPerSegment, (iterations-1)*pointsPerSegment+1);
 
             let geometry = new THREE.BufferGeometry().setFromPoints(finalPoints);
             let material = new THREE.LineBasicMaterial({
