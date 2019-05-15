@@ -215,6 +215,7 @@
                 plotPoint(plottedW[i], "w<sub>" + i + "</sub>", wColor);
 
             }
+            plottedX[numPoints] = transformByMatrix(plottedX[numPoints - 1]);
         }
 
         // Creates connections between xi and wi points.
@@ -233,10 +234,13 @@
         // Creates spiral through xi points.
         function createSpiral() {
             let curve = new THREE.CatmullRomCurve3();
+            curve.points.push(new THREE.Vector3(1.6, -1.2, 1/1.07))
             for (let i = 0; i < numPoints; i++) {
                 curve.points.push(plottedX[i]);
             }
-            let points = curve.getPoints(numPoints*3);
+            curve.points.push(plottedX[numPoints]);
+            let points = curve.getPoints(((numPoints+1) * 4));
+            points = points.splice(4, points.length - 8);
             let geometry = new THREE.BufferGeometry().setFromPoints(points);
             let material = new THREE.LineBasicMaterial({
                 color: xColor,
