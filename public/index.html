@@ -47,27 +47,19 @@
             font-size: 10pt;
             font-weight: normal;
         }
+
+        #coordinateBox {
+            z-index: 2;
+            position: absolute;
+            background-color: white;
+            border: 1px solid black;
+            padding: 10px;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>
 <body>
-    <!-- <div id="info">
-        <table>
-            <tr>
-                <th style="font-weight: bold;">x<sub>i</sub></th>
-                <th style="font-style: italic; font-weight: normal;">(x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>)</th>
-                <th style="font-weight: bold;">||x<sub>i</sub>||</th>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">x<sub>1</sub></td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">x<sub>2</sub></td>
-            </tr>
-
-
-        </table>
-    </div> -->
+    <div id="coordinateBox"></div>
     <div id="info">
         Drag to rotate camera, mouse wheel to zoom in/out<br>
         To change number of iterations, add ?iterations=x to url<br>
@@ -85,6 +77,8 @@
         let plottedW = [];
         let iterations = 12;//parseInt(prompt("Number of iterations: "));
         let maxHeight = 0;
+        var mouse = new THREE.Vector2();
+        var coordinateBox = document.getElementById("coordinateBox");
 
         let cylinderColor = "#fce7b5";
         let xColor = "#007484";
@@ -100,6 +94,8 @@
             [-.6, .8, 0  ],
             [  0,  0, 1.07]
         ];
+
+        window.addEventListener( 'mousemove', onMouseMove, false );
 
         init();
         addLights();
@@ -157,6 +153,9 @@
             // Initialize scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xffffff);
+
+            // Initialize raycaster for intersect detection
+            raycaster = new THREE.Raycaster();
 
             // Initialize renderer
             renderer = new THREE.WebGLRenderer({antialias: true});
@@ -349,6 +348,7 @@
             let sphereGeometry = new THREE.SphereGeometry(0.04, 16, 16);
             let sphereMaterial = new THREE.MeshBasicMaterial({color: color});
             let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.name = "point";
             scene.add(sphere);
             
             sphere.position.copy(v);
@@ -358,12 +358,38 @@
             document.body.appendChild(label.element);
         }
 
+        // Updates mouse position
+        function onMouseMove( event ) {
+
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scene.children);
+            coordinateBox.style.display = "none";
+            for (let i = 0; i < intersects.length; i++) {
+                if (intersects[i].object.name == "point") {
+                    let point = intersects[i].object;
+                    coordinateBox.innerHTML = "(" + point.position.x.toFixed(2) + ", " + point.position.y.toFixed(2) + ", " + point.position.z.toFixed(2) + ")";
+                    coordinateBox.style.display = "block";
+                    coordinateBox.style.top = event.clientY - 50 + "px";
+                    coordinateBox.style.left = event.clientX - (coordinateBox.offsetWidth / 2) + "px";
+                }
+            }
+
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             for (let i = 0; i < textLabels.length; i++) {
                 textLabels[i].update();
             }
+
+            
         }
         
         function render() {
