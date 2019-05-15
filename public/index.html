@@ -81,7 +81,8 @@
         let textLabels = [];
         let plottedX = [];
         let plottedW = [];
-        let numPoints = 12;
+        let numPoints = 12;//parseInt(prompt("Number of iterations: "));
+        let maxHeight = 0;
 
         let cylinderColor = "#fce7b5";
         let xColor = "#007484";
@@ -99,6 +100,12 @@
         ];
 
         init();
+        addLights();
+        plotPoints();
+        createCylinder();
+        createAxes();
+        createConnections();
+        createSpiral();
         render();
         animate();
 
@@ -134,6 +141,8 @@
 
         // Initializes camera, scene, lighting, renderer and controls
         function init() {
+            
+
             // Setup the orthographic camera
             let distance = 4.5;
             let ratio = width / height;
@@ -158,12 +167,15 @@
             controls.enablePan = false;
             controls.addEventListener("change", render);
 
-            createAxes();
-            createCylinder();
-            addLights();
-            plotPoints();
-            createSpiral();
-            createConnections();
+            // Gets variables from URL bar
+            let vars = {};
+            let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                vars[key] = value;
+            });
+            
+            if ("numPoints" in vars) {
+                numPoints = parseInt(vars["numPoints"]);
+            }
         }
 
         // Creates ambient and point lights for the scene
@@ -182,8 +194,9 @@
 
         // Creates the cylinder and adds it to the scene
         function createCylinder() {
+            maxHeight = plottedX[numPoints - 1].z;
             
-            let cylinderGeometry = new THREE.CylinderGeometry(2, 2, 2.5, 40, 1, true, 0, Math.PI * 2);
+            let cylinderGeometry = new THREE.CylinderGeometry(2, 2, maxHeight, 40, 1, true, 0, Math.PI * 2);
 
             let material = new THREE.MeshPhongMaterial({
                 color: cylinderColor,
@@ -196,7 +209,7 @@
             });
             let cylinder = new THREE.Mesh(cylinderGeometry, material);
             cylinder.rotation.x = Math.PI/2;
-            cylinder.position.z = 1.25;
+            cylinder.position.z = maxHeight/2;
             
             scene.add(cylinder);
         }
@@ -233,15 +246,19 @@
         
         // Creates spiral through xi points.
         function createSpiral() {
+            let pointsPerSegment = 4;
+
             let curve = new THREE.CatmullRomCurve3();
             curve.points.push(new THREE.Vector3(1.6, -1.2, 1/1.07))
             for (let i = 0; i < numPoints; i++) {
                 curve.points.push(plottedX[i]);
             }
             curve.points.push(plottedX[numPoints]);
-            let points = curve.getPoints(((numPoints+1) * 4));
-            points = points.splice(4, points.length - 8);
-            let geometry = new THREE.BufferGeometry().setFromPoints(points);
+            let points = curve.getPoints((numPoints + 1) * pointsPerSegment);
+
+            let finalPoints = points.splice(pointsPerSegment, (numPoints-1)*pointsPerSegment+1);
+
+            let geometry = new THREE.BufferGeometry().setFromPoints(finalPoints);
             let material = new THREE.LineBasicMaterial({
                 color: xColor,
             });
@@ -270,7 +287,7 @@
             
             let zAxisGeometry = new THREE.Geometry();
             zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-            zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, 4));
+            zAxisGeometry.vertices.push(new THREE.Vector3(0, 0, maxHeight));
 
             let xAxisMaterial = new THREE.LineBasicMaterial({color: xAxisColor});
             let yAxisMaterial = new THREE.LineBasicMaterial({color: yAxisColor});
@@ -302,7 +319,7 @@
             yCone.position.y = 3;
 
             zCone.rotation.x = Math.PI/2;
-            zCone.position.z = 4;
+            zCone.position.z = maxHeight;
             
             // scene.add(xCone);
             // scene.add(yCone);
