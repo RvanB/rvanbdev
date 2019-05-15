@@ -10,12 +10,13 @@ var mouse = new THREE.Vector2();
 var coordinateBox = document.getElementById("coordinateBox");
 
 let cylinderColor = "#fce7b5";
-let xColor = "#007484";
-let wColor = "black";
+let spiralColor = "#007484";
+let pointColor = "black";
 let textColor = "black";
 let xAxisColor = "black";
 let yAxisColor = "black";
 let zAxisColor = "black";
+let latexContainer = document.getElementById("latexContainer");
 
 // Transformation matrix A
 let A = [
@@ -27,12 +28,20 @@ let A = [
 window.addEventListener( 'mousemove', onMouseMove, false );
 
 init();
-addLights();
 plotPoints();
+for (let i = 0; i < iterations; i++) {
+    addLaTeX('x', i);
+    addLaTeX('w', i);
+}
+MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+addLights();
 createCylinder();
 createAxes();
 createConnections();
 createSpiral();
+
+
+
 render();
 animate();
 
@@ -42,13 +51,12 @@ function TextLabel(text, parent, color) {
     let div = document.createElement("div");
     div.style.position = "absolute";
     div.innerHTML = text;
-    div.className = "label";
+    div.className = "label clickThrough";
     div.style.top = 0;
     div.style.left = 0;
     div.style.width = 100;
     div.style.height = 100;
     div.style.color = color;
-
     this.element = div;
     this.position = new THREE.Vector3(0, 0, 0);
     this.parent = parent;
@@ -61,7 +69,7 @@ function TextLabel(text, parent, color) {
     this.get2DCoordinates = function(position) {
         let vector = position.project(camera);
         vector.x = (vector.x + 1)/2 * width - 10; 
-        vector.y = -(vector.y - 1)/2 * height - 30;
+        vector.y = -(vector.y - 1)/2 * height - 70;
         return vector;
     };
 }
@@ -81,13 +89,13 @@ function init() {
 
     // Initialize scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
 
     // Initialize raycaster for intersect detection
     raycaster = new THREE.Raycaster();
 
     // Initialize renderer
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    renderer.setClearColor( 0x000000, 0 );
     renderer.setSize(width, height);
     document.body.appendChild( renderer.domElement );
 
@@ -148,17 +156,36 @@ function createCylinder() {
 function plotPoints() {
     plottedX[0] = new THREE.Vector3(2, 0, 1);
     plottedW[0] = new THREE.Vector3(2, 0, 0);
-    plotPoint(plottedX[0], "x<sub>0</sub>", xColor);
-    plotPoint(plottedW[0], "w<sub>0</sub>", wColor);
+    plotPoint(plottedX[0], "\\[\\vec{x}_{0}\\]", pointColor);
+    plotPoint(plottedW[0], "\\[\\vec{w}_{0}\\]", pointColor);
+
     for (let i = 1; i < iterations; i++) {
         plottedX[i] = transformByMatrix(plottedX[i - 1])
-        plotPoint(plottedX[i], "x<sub>" + i + "</sub>", xColor);
+        plotPoint(plottedX[i], "\\[\\vec{x}_{" + i + "}\\]", pointColor);
 
         plottedW[i] = transformByMatrix(plottedW[i - 1])
-        plotPoint(plottedW[i], "w<sub>" + i + "</sub>", wColor);
-
+        plotPoint(plottedW[i], "\\[\\vec{w}_{" + i + "}\\]", pointColor);
     }
     plottedX[iterations] = transformByMatrix(plottedX[iterations - 1]);
+}
+
+function addLaTeX(letter, index) {
+    let point;
+    if (letter == 'x') {
+        point = plottedX[index];
+    } else {
+        point = plottedW[index];
+    }
+
+    let element = "<div class='coordinateBox clickThrough' id='" + letter + index + "'>"
+    +"\\begin{bmatrix}"
+    + point.x.toFixed(2) + "\\\\"
+    + point.y.toFixed(2) + "\\\\"
+    + point.z.toFixed(2)
+    +"\\end{bmatrix}";
+    + "</div>";
+
+    latexContainer.innerHTML = latexContainer.innerHTML + element;
 }
 
 // Creates connections between xi and wi points.
@@ -168,7 +195,7 @@ function createConnections() {
         let connectionGeometry = new THREE.Geometry();
         connectionGeometry.vertices.push(plottedX[i]);
         connectionGeometry.vertices.push(plottedW[i]);
-        let connectionMaterial = new THREE.LineBasicMaterial({color: wColor});
+        let connectionMaterial = new THREE.LineBasicMaterial({color: "black"});
         let connection = new THREE.Line(connectionGeometry, connectionMaterial);
         scene.add(connection);
     }
@@ -189,7 +216,7 @@ function createSpiral() {
     let splicedPoints = points.splice(pointsPerSegment, (iterations-1)*pointsPerSegment+1);
     let spline = new THREE.SplineCurve3(splicedPoints);
     let geometry = new THREE.TubeGeometry(spline, splicedPoints.length, 0.03, 8, false);
-    let material = new THREE.MeshBasicMaterial({color: xColor});
+    let material = new THREE.MeshBasicMaterial({color: spiralColor});
     let mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 }
@@ -254,12 +281,12 @@ function createAxes() {
     // scene.add(zCone);
 
     // Create text labels for axes
-    let xLabel = new TextLabel("x<sub>1</sub>", xCone, xAxisColor);
-    let yLabel = new TextLabel("x<sub>2</sub>", yCone, yAxisColor);
-    let zLabel = new TextLabel("x<sub>3</sub>", zCone, zAxisColor);
-    xLabel.element.className = "axisLabel";
-    yLabel.element.className = "axisLabel";
-    zLabel.element.className = "axisLabel";
+    let xLabel = new TextLabel("\\[x_1\\]", xCone, xAxisColor);
+    let yLabel = new TextLabel("\\[x_2\\]", yCone, yAxisColor);
+    let zLabel = new TextLabel("\\[x_3\\]", zCone, zAxisColor);
+    xLabel.element.className = "label clickThrough";
+    yLabel.element.className = "label clickThrough";
+    zLabel.element.className = "label clickThrough";
     textLabels.push(xLabel);
     textLabels.push(yLabel);
     textLabels.push(zLabel);
@@ -272,10 +299,11 @@ function createAxes() {
 // Creates text label for the point with the given name
 function plotPoint(v, name, color) {
 
-    let sphereGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+    let sphereGeometry = new THREE.SphereGeometry(0.04, 16, 16);
     let sphereMaterial = new THREE.MeshBasicMaterial({color: color});
     let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.name = "point";
+    sphere.name = name.substring(name.indexOf("{") + 1, name.indexOf("}")) + name.substring(name.lastIndexOf("{") + 1, name.lastIndexOf("}")); // \\[\\vec{x}_i\\]
+    // console.log(sphere.name);
     scene.add(sphere);
     
     sphere.position.copy(v);
@@ -288,22 +316,23 @@ function plotPoint(v, name, color) {
 // Updates mouse position
 function onMouseMove( event ) {
 
-    // calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
     var intersects = raycaster.intersectObjects(scene.children);
-    coordinateBox.style.display = "none";
+
+    for (let i = 0; i < latexContainer.children.length; i++) {
+        latexContainer.children[i].style.display = "none";
+    }
     for (let i = 0; i < intersects.length; i++) {
-        if (intersects[i].object.name == "point") {
-            let point = intersects[i].object;
-            coordinateBox.innerHTML = "(" + point.position.x.toFixed(2) + ", " + point.position.y.toFixed(2) + ", " + point.position.z.toFixed(2) + ")";
-            coordinateBox.style.display = "block";
-            coordinateBox.style.top = event.clientY - 50 + "px";
-            coordinateBox.style.left = event.clientX - (coordinateBox.offsetWidth / 2) + "px";
+        let name = intersects[i].object.name;
+        if (name != "") {
+            let element = document.getElementById(name);
+
+            element.style.top = event.clientY - 50 + "px";
+            element.style.left = event.clientX + 25 + "px";
+            element.style.display = "block";
         }
     }
 
@@ -315,8 +344,6 @@ function animate() {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].update();
     }
-
-    
 }
 
 function render() {
