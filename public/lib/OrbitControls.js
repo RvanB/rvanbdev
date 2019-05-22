@@ -309,36 +309,53 @@ THREE.OrbitControls = function ( object, domElement ) {
 			v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
 			v.multiplyScalar( - distance );
 
-			panOffset.add( v );
+			// panOffset.add( v );
 
 		};
 
 	}();
 
-	var panUp = function () {
+	var panUp = function() {
 
-		var v = new THREE.Vector3();
-
+		let v = new THREE.Vector3();
+	
 		return function panUp( distance, objectMatrix ) {
-
-			if ( scope.screenSpacePanning === true ) {
-
-				v.setFromMatrixColumn( objectMatrix, 1 );
-
-			} else {
-
-				v.setFromMatrixColumn( objectMatrix, 0 );
-				v.crossVectors( scope.object.up, v );
-
-			}
-
+	
+			v.setFromMatrixColumn( objectMatrix, 1 ); // get Z column of objectMatrix
+			v.y = 0;
+			v.x = 0;
+	
 			v.multiplyScalar( distance );
-
+	
 			panOffset.add( v );
-
 		};
-
+	
 	}();
+
+	// var panUp = function () {
+
+	// 	var v = new THREE.Vector3();
+
+	// 	return function panUp( distance, objectMatrix ) {
+
+	// 		if ( scope.screenSpacePanning === true ) {
+
+	// 			v.setFromMatrixColumn( objectMatrix, 1 );
+
+	// 		} else {
+
+	// 			v.setFromMatrixColumn( objectMatrix, 0 );
+	// 			v.crossVectors( scope.object.up, v );
+
+	// 		}
+
+	// 		v.multiplyScalar( distance );
+
+	// 		panOffset.add( v );
+
+	// 	};
+
+	// }();
 
 	// deltaX and deltaY are in pixels; right and down are positive
 	var pan = function () {

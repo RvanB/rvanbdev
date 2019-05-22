@@ -79,13 +79,14 @@ function init() {
     
 
     // Setup the orthographic camera
-    let distance = 4.5;
+    let distance = 3.5;
     let ratio = width / height;
     camera = new THREE.OrthographicCamera(-distance * ratio, distance * ratio, distance, -distance, 1, 1000);
     
-    camera.position.set(10, 8, 10);
-    camera.up = new THREE.Vector3(0, 0, 1);
+    camera.position.set(10, 10, 10);
     camera.lookAt(0, 0, 0);
+    camera.up = new THREE.Vector3(0, 0, 1);
+    
 
     // Initialize scene
     scene = new THREE.Scene();
@@ -102,7 +103,7 @@ function init() {
     // Set up camera and controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.rotateSpeed = .5;
-    controls.enablePan = false;
+    controls.enablePan = true;
     controls.addEventListener("change", render);
 
     // Gets variables from URL bar
