@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background: black;
+}
+
+.container {
+  margin: 40px;
+}
+
+.letterContainer {
+  position: fixed;
+}
+
+.letterRow {
+  display: flex;
+}
+
+.letter {
+  font-family: monospace;
+  color: white;
+  overflow-x: hidden;
+}
+
+.letter > span {
+  font-size: 48pt;
+  position: relative;
+  transition: left 1s ease;
+}
