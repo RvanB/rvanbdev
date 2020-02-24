@@ -45,6 +45,8 @@ li {
 
 a {
   /* font-family: "EB Garamond", serif; */
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
   text-decoration: none;
   color: #a7a7a7;
 }
