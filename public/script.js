@@ -76,6 +76,23 @@ function animateLetters() {
 }
 
 window.onload = function() {
+    
+    
+    let projectsList = document.getElementsByClassName("projectsList")[0];
+    projectsList.style.height = "calc(100% - " + document.getElementsByTagName("header")[0].offsetHeight + "px)";
+    $(".projectsList").slimScroll({
+        color: "white",
+        position: "left",
+        start: "top",
+        size: "8px",
+        alwaysVisible:true,
+        wheelStep: 10,
+        touchScrollStep: 3000,
+        height: window.innerHeight - document.getElementsByTagName("header")[0].offsetHeight -80 + "px"
+    });
     animateLetters();
+
+
+    
 }
 
