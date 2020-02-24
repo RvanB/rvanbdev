@@ -1,28 +1,55 @@
 body {
   margin: 0;
-  background: black;
+  background-color: black;
+  color: white;
+  font-size: 14pt;
+  font-family: "Helvetica", Arial, sans-serif;
 }
 
 .container {
   margin: 40px;
 }
 
-.letterContainer {
-  position: fixed;
-}
-
 .letterRow {
   display: flex;
+  /* margin-top: -20px; */
+  /* padding-bottom: 3px; */
 }
 
 .letter {
-  font-family: monospace;
-  color: white;
   overflow-x: hidden;
+  color: white;
 }
 
-.letter > span {
+.letter > span, #kerningCalculator {
+
   font-size: 48pt;
   position: relative;
-  transition: left 1s ease;
+  transition: left 2s ease;
+}
+
+#kerningCalculator {
+  position: absolute;
+  visibility: hidden;
+}
+
+.projectsList {
+  margin-top: 1em;
+}
+
+li {
+  list-style-type: none;
+  margin: 0;
+  padding-top: .5em;
+}
+
+a {
+  /* font-family: "EB Garamond", serif; */
+  text-decoration: none;
+  color: #a7a7a7;
+}
+
+a:hover {
+  /* text-decoration: underline; */
+  color: white;
 }
