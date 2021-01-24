@@ -14,7 +14,6 @@ function getRowString(row) {
     for (let i = 0; i < row.children.length; i++) {
         string = string + row.children[i].firstChild.innerHTML;
     }
-    console.log(string);
     return string;
 }
 
@@ -76,23 +75,24 @@ function animateLetters() {
 }
 
 window.onload = function() {
+
+    totalHeight = document.getElementsByTagName("header")[0].offsetHeight + document.getElementById("projectList").offsetHeight + document.getElementsByClassName("list")[1].offsetHeight;
     
-    
-    let projectsList = document.getElementsByClassName("projectsList")[0];
-    projectsList.style.height = "calc(100% - " + document.getElementsByTagName("header")[0].offsetHeight + "px)";
-    $(".projectsList").slimScroll({
-        color: "white",
-        position: "left",
-        start: "top",
-        size: "8px",
-        alwaysVisible:true,
-        wheelStep: 10,
-        touchScrollStep: 3000,
-        height: window.innerHeight - document.getElementsByTagName("header")[0].offsetHeight -80 + "px"
-    });
+    document.getElementById("projectListContainer").style.height = "calc(100% - 3em - " + (document.getElementsByTagName("header")[0].offsetHeight + document.getElementsByClassName("list")[1].offsetHeight) + "px)";
+
+    if (totalHeight > window.innerHeight) {
+        height = "calc(100% - 2em - " + (document.getElementsByTagName("header")[0].offsetHeight + document.getElementsByClassName("list")[1].offsetHeight) + "px)";
+        $("#projectList").slimScroll({
+            color: "white",
+            position: "left",
+            start: "top",
+            size: "8px",
+            alwaysVisible:true,
+            wheelStep: 10,
+            touchScrollStep: 3000,
+            height: "auto"
+        });
+    }
     animateLetters();
-
-
-    
 }
 

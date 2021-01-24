@@ -8,7 +8,13 @@ html,body {
   height: 100%;
 }
 
+#info {
+  position: absolute;
+  bottom: 0;
+}
+
 .container {
+  height: 100%;
   padding: 20px;
   /* width: 100%;
   height: 100%; */
@@ -39,7 +45,7 @@ header {
   padding-bottom: 1em;
 }
 
-.projectsList li {
+.list li {
   list-style: none;
   margin-left: 20px;
   padding-bottom: 1em;
