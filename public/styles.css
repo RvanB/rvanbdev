@@ -6,6 +6,7 @@ html,body {
   font-family: Helvetica, Arial, sans-serif;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 #info {
@@ -14,12 +15,8 @@ html,body {
 }
 
 .container {
+  margin: 15px 0px 0px 20px;
   height: 100%;
-  padding: 20px;
-  /* width: 100%;
-  height: 100%; */
-  /* display: flex;
-  flex-direction: column; */
 }
 
 .letterRow {
